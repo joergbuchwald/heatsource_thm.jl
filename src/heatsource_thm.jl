@@ -37,19 +37,19 @@ struct derived_param
     Z::Float32
 end
 
-p = input_param(2.8, 0.25, 999.1, 4280.0, 0.6, 1.838, 4280.0, 917.654, 2.0e-20, 1.0e-3, 1.5e-5, 4.0e-4, 273.15, 300, 0.16)
+param = input_param(2.8, 0.25, 999.1, 4280.0, 0.6, 1.838, 4280.0, 917.654, 2.0e-20, 1.0e-3, 1.5e-5, 4.0e-4, 273.15, 300, 0.16)
 
- 
+
 function determine_derivedconst(p::input_param)
     aprime = p.a_s
-    γ_w = 9.81 * p.ρ_w 
+    γ_w = 9.81 * p.ρ_w
     λ = p.E * p.ν / ((1+p.ν)*(1-2*p.ν))
     G = p.E / (2*(1+p.ν))
     K = p.n*p.K_w + (1-p.n)*p.K_s
     bprime = (λ+2*G/3)*aprime
     K_hydr = p.k*p.ρ_w*p.c_w+(1-p.n)*p.ρ_s*p.c_s
     m = p.n*p.ρ_w*p.c_w+(1-p.n)*p.ρ_s*p.c_s
-    κ = K/m   
+    κ = K/m
     a_u = p.a_s*(1-p.n)+p.a_w*p.n
     c = K_hydr*(λ+2*G)/γ_w
     X = a_u*(λ+2*G)-bprime
@@ -59,14 +59,14 @@ function determine_derivedconst(p::input_param)
     return d
 end
 
-d = determine_derivedconst(p)
+deriv_param = determine_derivedconst(param)
 
 function f(κ, R, t)
-    return erfc(R/(2*sqrt(κ*t)))
+    return erfc.(R ./ (2.0 .* sqrt.(κ.*t)))
 end
 
 function g(κ, R, t)
-    return (κ*t/R^2+(1/2-κ*t/R**2)*erfc(R/(2*sqrt(κ*t)))-sqrt(κ*t/(pi*R^2))*exp(-R^2/(4*κ*t)))
+    return (κ .* t ./ R.^2 .+ (1.0 ./ 2. .- κ .* t ./ R.^2) .* erfc.(R ./ (2. .* sqrt.(κ .* t))) .- sqrt.(κ .* t ./ (pi .* R.^2)) .* exp.(-R.^2 ./ (4. .* κ .* t)))
 end
 
 function fstar(κ, R, t)
@@ -75,5 +75,8 @@ end
 
 function gstart(κ, R, t)
     return (Y*g(κ,R,t)-Z*g(c,R,t))
+end
+function temperature(R, t, p::input_param, d::derived_param)
+    return (p.Q/(4*pi.*d.K.*R)*f(d.κ,R,t).+p.T₀)
 end
 end # module
