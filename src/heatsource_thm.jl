@@ -37,7 +37,7 @@ struct derived_param
     Z::Float32
 end
 
-param = input_param(2.8, 0.25, 999.1, 4280.0, 0.6, 1.838, 4280.0, 917.654, 2.0e-20, 1.0e-3, 1.5e-5, 4.0e-4, 273.15, 300, 0.16)
+param = input_param(2.8e9, 0.25, 999.1, 4280.0, 0.6, 1.838, 4280.0, 917.654, 2.0e-20, 1.0e-3, 1.5e-5, 4.0e-4, 273.15, 300, 0.16)
 
 
 function determine_derivedconst(p::input_param)
@@ -78,5 +78,8 @@ function gstart(κ, R, t)
 end
 function temperature(R, t, p::input_param, d::derived_param)
     return (p.Q/(4*pi.*d.K.*R)*f(d.κ,R,t).+p.T₀)
+end
+function porepressure(R, t, p::input_param, d::derived_param)
+    return (d.X / (1.0-d.c/d.κ) .* p.Q ./ (4.0 * pi * d.K .* R) .* (f(d.κ, R, t) .- f(d.c, R, t)))
 end
 end # module
