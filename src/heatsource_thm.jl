@@ -86,19 +86,19 @@ function ux_i(R, x_i, t, p::input_param)
 end
 
 function dg_dR(κ, i, R, t)
-    return ((2.0 .* i ./ R^3) .* sqrt(κ .* t ./ pi) .* exp(-R * R / (4.0 * κ * t)) + (2.0 * i * κ * t / R^4) * (f(κ, R, t) - 1.0))
+    return ((2.0 .* i ./ R.^3) .* sqrt.(κ .* t ./ pi) .* exp.(-R .* R ./ (4.0 * κ .* t)) .+ (2.0 * i * κ .* t ./ R.^4) .* (f(κ, R, t) .- 1.0))
 end
 function dgstar_dR(Y, Z, κ, c, i, R, t) # Subscript R means derivative w.r.t R
-    return (Y * dg_dR(κ,i,R,t)-Z * dg_dR(c,i,R,t))
+    return (Y .* dg_dR(κ,i,R,t) .- Z .* dg_dR(c,i,R,t))
 end
 
 function sigma_N(x, y, z, R, t, i, p::input_param) # N for normal components
-    return ((p.Q * p.a_u / (4.0 * pi * p.K * R))*(2.0 * G*( gstar(p.Y, p.Z, p.κ, p.c, R, t) * (1 - i^2 / R^2) + i * dgstar_dR(p.Y, p.Z, p.κ, p.c, i,R,t))
-                    +p.λ * (x * dgstar_dR(p.Y, p.Z, p.κ, p.c, x, R, t) + y * dgstar_dR(p.Y, p.Z, p.κ, p.c, y, R, t) + z * dgstar_dR(p.Y, p.Z, p.κ, p.c, z, R, t) +
-                    2.0 * gstar(p.Y, p.Z, p.κ, p.c, R, t)))-p.bprime * (temperature(R,t,p) - p.T0))
+    return ((p.Q * p.a_u ./ (4.0 * pi * p.K .* R)) .* (2.0 * p.G*( gstar(p.Y, p.Z, p.κ, p.c, R, t) * (1 - i^2 ./ R^2) .+ i * dgstar_dR(p.Y, p.Z, p.κ, p.c, i,R,t))
+                    .+ p.λ .* (x .* dgstar_dR(p.Y, p.Z, p.κ, p.c, x, R, t) .+ y .* dgstar_dR(p.Y, p.Z, p.κ, p.c, y, R, t) .+ z .* dgstar_dR(p.Y, p.Z, p.κ, p.c, z, R, t) .+
+                    2.0 .* gstar(p.Y, p.Z, p.κ, p.c, R, t))) .- p.bprime .* (temperature(R,t,p) .- p.T₀))
 end
 function sigma_S(x, y, z, R, t, i, j, p::input_param) # S for shear components
-    return ((p.Q * p.a_u / (4.0 * pi * p.K * R)) * (2.0 * p.G * (i * dgstar_dR(p.Y, p.Z, p.κ, p.c, j, R, t) / 2 + j * dgstar_dR(p.Y, p.Z, p.κ, p.c,i,R,t)
-        / 2.0 - i * j * gstar(Y, Z, κ, c, R, t) / R^2)))
+    return ((p.Q * p.a_u ./ (4.0 * pi * p.K .* R)) .* (2.0 * p.G .* (i * dgstar_dR(p.Y, p.Z, p.κ, p.c, j, R, t) / 2 .+ j .* dgstar_dR(p.Y, p.Z, p.κ, p.c,i,R,t)
+        / 2.0 .- i * j .* gstar(p.Y, p.Z, p.κ, p.c, R, t) / R.^2)))
 end
 end # module
