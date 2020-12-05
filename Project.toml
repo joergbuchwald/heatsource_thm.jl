@@ -4,4 +4,5 @@ authors = ["joerg "]
 version = "0.1.0"
 
 [deps]
+DarkMode = "933edf66-562e-4494-9e5f-31d7e8b9849e"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
