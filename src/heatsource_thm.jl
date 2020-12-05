@@ -75,18 +75,22 @@ end
 function gstar(Y, Z, κ, c, R, t)
     return (Y*g(κ,R,t)-Z*g(c,R,t))
 end
-function temperature(R, t, p::input_param)
+function temperature(x, y, z, t, p::input_param)
+    r = R(x,y,z)
     Q, K, κ, T₀ = p.Q, p.K, p.κ, p.T₀
-    return (Q / (4*pi .* K .* R) * f(κ, R, t) .+ T₀)
+    return (Q / (4*pi .* K .* r) * f(κ, r, t) .+ T₀)
 end
-function porepressure(R, t, p::input_param)
+function porepressure(x, y, z, t, p::input_param)
+    r = R(x,y,z)
     X, Q, K, κ, c = p.X, p.Q, p.K, p.κ, p.c
-    return (X / (1.0-c/κ) .* Q ./ (4.0 * pi * K .* R) .* (f(κ, R, t) .- f(c, R, t)))
+    return (X / (1.0-c/κ) .* Q ./ (4.0 * pi * K .* r) .* (f(κ, r, t) .- f(c, r, t)))
 end
 
-function ux_i(R, x_i, t, p::input_param)
+function u_i(x, y, z, t, i::Symbol, p::input_param)
     a_u, Q, K, Y, Z, κ, c = p.a_u, p.Q, p.K, p.Y, p.Z, p.κ, p.c
-    return a_u .* x_i .* Q/(4.0 * pi * K .* R) .* gstar(Y, Z, κ, c, R, t)
+    r = R(x,y,z)
+    index = Dict(:x => x, :y => y, :z =>z)
+    return a_u .* index[i] .* Q/(4.0 * pi * K .* r) .* gstar(Y, Z, κ, c, r, t)
 end
 
 function dg_dR(κ, i, R, t)
@@ -96,16 +100,15 @@ function dgstar_dR(Y, Z, κ, c, i, R, t) # Subscript R means derivative w.r.t R
     return (Y .* dg_dR(κ,i,R,t) .- Z .* dg_dR(c,i,R,t))
 end
 
-function sigma_N(x, y, z, ii::Symbol, t, p::input_param) # N for normal components
+function sigma_ii(x, y, z, t, ii::Symbol, p::input_param) # N for normal components
     Q, a_u, K, G, Y, Z, κ, c, λ, bprime, T₀ = p.Q, p.a_u, p.K, p.G, p.Y, p.Z, p.κ, p.c, p.λ, p.bprime, p.T₀
     r = R(x,y,z)
     index = Dict(:xx => x, :yy => y, :zz => z)
-    
     return ((Q * a_u ./ (4.0 * pi * K .* r)) .* (2.0 * G*( gstar(Y, Z, κ, c, r, t) * (1 - index[ii]^2 ./ r^2) .+ index[ii] * dgstar_dR(Y, Z, κ, c, index[ii],r,t))
                     .+ λ .* (x .* dgstar_dR(Y, Z, κ, c, x, r, t) .+ y .* dgstar_dR(Y, Z, κ, c, y, r, t) .+ z .* dgstar_dR(Y, Z, κ, c, z, r, t) .+
                     2.0 .* gstar(Y, Z, κ, c, r, t))) .- bprime .* (temperature(r,t,p) .- T₀))
 end
-function sigma_S(x, y, z, t, i::Symbol, j::Symbol, p::input_param) # S for shear components
+function sigma_ij(x, y, z, t, i::Symbol, j::Symbol, p::input_param) # S for shear components
     Q, a_u, K, G, Y, Z, κ, c, λ, bprime, T₀ = p.Q, p.a_u, p.K, p.G, p.Y, p.Z, p.κ, p.c, p.λ, p.bprime, p.T₀
     r = R(x,y,z)
     index = Dict(:x => x, :y => y, :z =>z)
