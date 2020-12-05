@@ -96,40 +96,21 @@ function dgstar_dR(Y, Z, κ, c, i, R, t) # Subscript R means derivative w.r.t R
     return (Y .* dg_dR(κ,i,R,t) .- Z .* dg_dR(c,i,R,t))
 end
 
-function sigma_N(x, y, z, ii, t, p::input_param) # N for normal components
+function sigma_N(x, y, z, ii::Symbol, t, p::input_param) # N for normal components
     Q, a_u, K, G, Y, Z, κ, c, λ, bprime, T₀ = p.Q, p.a_u, p.K, p.G, p.Y, p.Z, p.κ, p.c, p.λ, p.bprime, p.T₀
     r = R(x,y,z)
-    i = 0
-    if ii == :xx
-        i = x
-    elseif ii == :yy
-        i = y
-    elseif ii == :zz
-        i = z
-    end
-    return ((Q * a_u ./ (4.0 * pi * K .* r)) .* (2.0 * G*( gstar(Y, Z, κ, c, r, t) * (1 - i^2 ./ r^2) .+ i * dgstar_dR(Y, Z, κ, c, i,r,t))
+    index = Dict(:xx => x, :yy => y, :zz => z)
+    
+    return ((Q * a_u ./ (4.0 * pi * K .* r)) .* (2.0 * G*( gstar(Y, Z, κ, c, r, t) * (1 - index[ii]^2 ./ r^2) .+ index[ii] * dgstar_dR(Y, Z, κ, c, index[ii],r,t))
                     .+ λ .* (x .* dgstar_dR(Y, Z, κ, c, x, r, t) .+ y .* dgstar_dR(Y, Z, κ, c, y, r, t) .+ z .* dgstar_dR(Y, Z, κ, c, z, r, t) .+
                     2.0 .* gstar(Y, Z, κ, c, r, t))) .- bprime .* (temperature(r,t,p) .- T₀))
 end
-function sigma_S(x, y, z, t, i, j, p::input_param) # S for shear components
+function sigma_S(x, y, z, t, i::Symbol, j::Symbol, p::input_param) # S for shear components
     Q, a_u, K, G, Y, Z, κ, c, λ, bprime, T₀ = p.Q, p.a_u, p.K, p.G, p.Y, p.Z, p.κ, p.c, p.λ, p.bprime, p.T₀
     r = R(x,y,z)
-    i = 0
-    if i == :x
-        i_ = x
-    elseif i == :y
-        i_ = y
-    elseif i == :z
-        i_ = z
-    end
-    if j == :x
-        j_ = x
-    elseif j == :y
-        j_ = y
-    elseif j == :z
-        j_ = z
-    end
-    return ((Q * a_u ./ (4.0 * pi * K .* R)) .* (2.0 * G .* (i_ * dgstar_dR(Y, Z, κ, c, j_, R, t) / 2 .+ j_ .* dgstar_dR(Y, Z, κ, c, i_, R, t)
-        / 2.0 .- i_ * j_ .* gstar(Y, Z, κ, c, R, t) / R.^2)))
+    index = Dict(:x => x, :y => y, :z =>z)
+
+    return ((Q * a_u ./ (4.0 * pi * K .* r)) .* (2.0 * G .* (index[i] * dgstar_dR(Y, Z, κ, c, index[j], r, t) / 2 .+ index[j] .* dgstar_dR(Y, Z, κ, c, index[i], r, t)
+        / 2.0 .- index[i] * index[j] .* gstar(Y, Z, κ, c, r, t) / r.^2)))
 end
 end # module
