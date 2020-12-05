@@ -106,7 +106,7 @@ function sigma_ii(x, y, z, t, ii::Symbol, p::input_param) # N for normal compone
     index = Dict(:xx => x, :yy => y, :zz => z)
     return ((Q * a_u ./ (4.0 * pi * K .* r)) .* (2.0 * G*( gstar(Y, Z, κ, c, r, t) * (1 - index[ii]^2 ./ r^2) .+ index[ii] * dgstar_dR(Y, Z, κ, c, index[ii],r,t))
                     .+ λ .* (x .* dgstar_dR(Y, Z, κ, c, x, r, t) .+ y .* dgstar_dR(Y, Z, κ, c, y, r, t) .+ z .* dgstar_dR(Y, Z, κ, c, z, r, t) .+
-                    2.0 .* gstar(Y, Z, κ, c, r, t))) .- bprime .* (temperature(r,t,p) .- T₀))
+                    2.0 .* gstar(Y, Z, κ, c, r, t))) .- bprime .* (temperature(x,y,z,t,p) .- T₀))
 end
 function sigma_ij(x, y, z, t, i::Symbol, j::Symbol, p::input_param) # S for shear components
     Q, a_u, K, G, Y, Z, κ, c, λ, bprime, T₀ = p.Q, p.a_u, p.K, p.G, p.Y, p.Z, p.κ, p.c, p.λ, p.bprime, p.T₀
